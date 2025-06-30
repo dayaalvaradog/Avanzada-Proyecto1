@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36203.30 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TallerAutomotriz.Core", "TallerAutomotriz.Core\TallerAutomotriz.Core.csproj", "{848CC2CE-02B8-4049-B4E5-0B1F454450B8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TallerAutomotriz.DataAccess", "TallerAutomotriz.DataAccess\TallerAutomotriz.DataAccess.csproj", "{4DD972A5-22D7-46C7-8D66-B153AB585244}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TallerAutomotriz.UI", "TallerAutomotriz.UI\TallerAutomotriz.UI.csproj", "{D1759D44-D722-4B2D-A0E6-DAF8728854B7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TallerAutomotriz.API", "TallerAutomotriz.API\TallerAutomotriz.API.csproj", "{59E486F6-52ED-4E8C-AE2B-D2F54E343ADB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{848CC2CE-02B8-4049-B4E5-0B1F454450B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{848CC2CE-02B8-4049-B4E5-0B1F454450B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{848CC2CE-02B8-4049-B4E5-0B1F454450B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{848CC2CE-02B8-4049-B4E5-0B1F454450B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DD972A5-22D7-46C7-8D66-B153AB585244}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DD972A5-22D7-46C7-8D66-B153AB585244}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DD972A5-22D7-46C7-8D66-B153AB585244}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DD972A5-22D7-46C7-8D66-B153AB585244}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1759D44-D722-4B2D-A0E6-DAF8728854B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1759D44-D722-4B2D-A0E6-DAF8728854B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1759D44-D722-4B2D-A0E6-DAF8728854B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1759D44-D722-4B2D-A0E6-DAF8728854B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59E486F6-52ED-4E8C-AE2B-D2F54E343ADB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59E486F6-52ED-4E8C-AE2B-D2F54E343ADB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59E486F6-52ED-4E8C-AE2B-D2F54E343ADB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59E486F6-52ED-4E8C-AE2B-D2F54E343ADB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {19E2BF1C-A941-461C-A6FE-3D2BE46E6844}
+	EndGlobalSection
+EndGlobal
