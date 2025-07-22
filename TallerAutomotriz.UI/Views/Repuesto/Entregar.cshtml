@@ -1,0 +1,308 @@
+﻿@{
+    ViewData["Title"] = "Entregar Repuesto";
+}
+
+<h1>Entregar Repuesto</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="form-group">
+            <label for="solicitudIdBuscar">ID de la Solicitud:</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="solicitudIdBuscar" placeholder="Ingrese el ID de la solicitud">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="button" id="btnBuscarSolicitud">Buscar Solicitud</button>
+                </div>
+            </div>
+            <div id="mensajeBusqueda" class="mt-2"></div>
+        </div>
+
+        <hr />
+
+        <form id="formEntregarRepuesto" style="display: none;">
+            <input type="hidden" id="idSolicitud" name="id">
+            <input type="hidden" id="repuestoIdHidden" name="repuestoId">
+            <input type="hidden" id="solicitanteIdHidden" name="IdSolicitante">
+            <input type="hidden" id="cantidadSolicitadaHidden" name="cantidadSolicitada">
+            <input type="hidden" id="fechaSolicitudHidden" name="fechaSolicitud">
+
+
+            <div class="form-group">
+                <label>Repuesto:</label>
+                <input type="text" class="form-control" id="nombreRepuesto" disabled>
+            </div>
+            <div class="form-group">
+                <label>Solicitante:</label>
+                <input type="text" class="form-control" id="nombreSolicitante" disabled>
+            </div>
+            <div class="form-group">
+                <label>Cantidad Solicitada:</label>
+                <input type="number" class="form-control" id="cantidadSolicitadaDisplay" disabled>
+            </div>
+            <div class="form-group">
+                <label>Fecha de Solicitud:</label>
+                <input type="date" class="form-control" id="fechaSolicitudDisplay" disabled>
+            </div>
+            <div class="form-group">
+                <label for="idUsuarioEntrega">ID del Usuario que Entrega:</label>
+                <input type="number" class="form-control" id="idUsuarioEntrega" name="idUsuarioEntrega" required>
+                <small class="form-text text-muted">ID del usuario que realiza la entrega. Ej: un empleado.</small>
+            </div>
+            <div class="form-group">
+                <label for="fechaEntrega">Fecha de Entrega:</label>
+                <input type="date" class="form-control" id="fechaEntrega" name="fechaEntrega" required>
+            </div>
+            <div class="form-group">
+                <label for="observaciones">Observaciones (Opcional):</label>
+                <textarea class="form-control" id="observaciones" name="observaciones" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="estado">Estado de la Solicitud:</label>
+                <select class="form-control" id="estado" name="estado">
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Entregado">Entregado</option>
+                    <option value="Cancelado">Cancelado</option>
+                </select>
+            </div>
+            <br />
+            <button type="submit" class="btn btn-success">Actualizar Solicitud</button>
+            <button type="button" class="btn btn-danger" id="btnCancelarSolicitud">Cancelar Solicitud</button>
+        </form>
+        <div id="mensajeActualizacion" class="mt-3"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const API_BASE_URL = "https://localhost:7002";
+        const API_SOLICITUDES_URL = `${API_BASE_URL}/api/SolicitudRepuesto`;
+        const API_REPUESTOS_URL = `${API_BASE_URL}/api/Repuesto/ObtenerRepuestoPorId`;
+        const API_USUARIOS_URL = `${API_BASE_URL}/api/Usuario/ObtenerUsuarioPorId`;
+
+        const mensajeBusquedaDiv = document.getElementById('mensajeBusqueda');
+        const formEntregarRepuesto = document.getElementById('formEntregarRepuesto');
+        const mensajeActualizacionDiv = document.getElementById('mensajeActualizacion');
+
+        let currentSolicitud = null; // Para almacenar la solicitud cargada
+
+        // Función para obtener la fecha actual en formato YYYY-MM-DD
+        function getCurrentDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = (today.getMonth() + 1).toString().padStart(2, '0');
+            const day = today.getDate().toString().padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Event listener para el botón de buscar solicitud
+        document.getElementById('btnBuscarSolicitud').addEventListener('click', async function() {
+            const idSolicitud = document.getElementById('solicitudIdBuscar').value;
+            mensajeBusquedaDiv.innerHTML = '';
+            mensajeBusquedaDiv.className = '';
+            formEntregarRepuesto.style.display = 'none'; // Ocultar formulario hasta que se encuentre la solicitud
+
+            if (!idSolicitud) {
+                mensajeBusquedaDiv.className = 'alert alert-warning';
+                mensajeBusquedaDiv.innerHTML = 'Por favor, ingrese un ID de solicitud.';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_SOLICITUDES_URL}/ObtenerSolicitudPorId/${idSolicitud}`);
+                if (response.ok) {
+                    currentSolicitud = await response.json();
+
+                    // Cargar nombres de repuesto y solicitante
+                    const repuesto = await fetch(`${API_REPUESTOS_URL}/${currentSolicitud.idRepuesto}`).then(res => res.json());
+                    const solicitante = await fetch(`${API_USUARIOS_URL}/${currentSolicitud.idSolicitante}`).then(res => res.json());
+
+                    $("#solicitudId").val(currentSolicitud.id);
+                    document.getElementById('repuestoIdHidden').value = currentSolicitud.idRepuesto;
+                    document.getElementById('solicitanteIdHidden').value = currentSolicitud.idSolicitante;
+                    document.getElementById('cantidadSolicitadaHidden').value = currentSolicitud.cantidadSolicitada;
+                    document.getElementById('fechaSolicitudHidden').value = currentSolicitud.fechaSolicitud.split('T')[0]; // Solo fecha
+
+                    document.getElementById('nombreRepuesto').value = repuesto ? repuesto.nombre : 'Desconocido';
+                    document.getElementById('nombreSolicitante').value = solicitante ? solicitante.nombre + ' ' + solicitante.apellido : 'Desconocido';
+                    document.getElementById('cantidadSolicitadaDisplay').value = currentSolicitud.cantidadSolicitada;
+                    document.getElementById('fechaSolicitudDisplay').value = currentSolicitud.fechaSolicitud.split('T')[0]; // Solo fecha
+
+                    $("#entregadoPorId").value = currentSolicitud.usuarioEntrega || '';
+                    document.getElementById('fechaEntrega').value = currentSolicitud.fechaEntrega ? currentSolicitud.fechaEntrega.split('T')[0] : getCurrentDate();
+                    document.getElementById('observaciones').value = currentSolicitud.observaciones || '';
+                    document.getElementById('estado').value = currentSolicitud.estado;
+
+                    formEntregarRepuesto.style.display = 'block';
+                    mensajeBusquedaDiv.className = 'alert alert-info';
+                    mensajeBusquedaDiv.innerHTML = `Solicitud ${currentSolicitud.id} cargada exitosamente.`;
+
+                    if (currentSolicitud.estado === 'Entregado' || currentSolicitud.estado === 'Cancelado') {
+                        disableFormFields(true);
+                        mensajeBusquedaDiv.className = 'alert alert-warning';
+                        mensajeBusquedaDiv.innerHTML = `Solicitud ${currentSolicitud.id} cargada. Estado: ${currentSolicitud.estado}. No se puede modificar.`;
+                    } else {
+                        disableFormFields(false);
+                    }
+
+                } else {
+                    currentSolicitud = null;
+                    const errorData = await response.json();
+                    mensajeBusquedaDiv.className = 'alert alert-danger';
+                    mensajeBusquedaDiv.innerHTML = `Error al buscar solicitud: ${errorData.title || errorData.detail || 'Solicitud no encontrada.'}`;
+                    console.error('Error al buscar solicitud:', errorData);
+                }
+            } catch (error) {
+                currentSolicitud = null;
+                mensajeBusquedaDiv.className = 'alert alert-danger';
+                mensajeBusquedaDiv.innerHTML = `Ocurrió un error de red: ${error.message}.`;
+                console.error('Error de red al buscar solicitud:', error);
+            }
+        });
+
+        formEntregarRepuesto.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (!currentSolicitud) {
+                mensajeActualizacionDiv.className = 'alert alert-danger';
+                mensajeActualizacionDiv.innerHTML = 'Por favor, busque una solicitud primero.';
+                return;
+            }
+
+            mensajeActualizacionDiv.innerHTML = '';
+            mensajeActualizacionDiv.className = '';
+
+            const estado = document.getElementById('estado').value;
+            const idUsuarioEntrega = $("#idUsuarioEntrega").val();
+            const fechaEntrega = document.getElementById('fechaEntrega').value;
+            const observaciones = document.getElementById('observaciones').value;
+
+            const updatedSolicitud = {
+                id: currentSolicitud.id,
+                idRepuesto: currentSolicitud.idRepuesto, 
+                idSolicitante: currentSolicitud.idSolicitante, 
+                cantidadSolicitada: currentSolicitud.cantidadSolicitada, 
+                fechaSolicitud: currentSolicitud.fechaSolicitud, 
+                estado: estado,
+                idEstado: 5,
+                idUsuarioEntrega: idUsuarioEntrega ? parseInt(idUsuarioEntrega) : null,
+                fechaEntrega: fechaEntrega ? fechaEntrega : null,
+                observaciones: observaciones || null
+            };
+
+            // Validaciones del lado del cliente para Entregar
+            if (estado === 'Entregado' && (!idUsuarioEntrega || !fechaEntrega)) {
+                mensajeActualizacionDiv.className = 'alert alert-warning';
+                mensajeActualizacionDiv.innerHTML = 'Para cambiar el estado a "Entregado", debe especificar el ID del usuario que entrega y la Fecha de Entrega.';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_SOLICITUDES_URL}/EntregarRepuesto/${updatedSolicitud.id}`, {
+                    method: 'PUT',
+                    mode:"cors",
+                    headers: {
+                        'Content-Type': 'application/json;charset=utf-8"'
+                    },
+                    body: JSON.stringify(updatedSolicitud)
+                });
+
+                if (response.ok) {
+                    mensajeActualizacionDiv.className = 'alert alert-success';
+                    mensajeActualizacionDiv.innerHTML = `Solicitud ${updatedSolicitud.id} actualizada a estado '${updatedSolicitud.estado}' exitosamente.`;
+                    // Recargar la solicitud para reflejar los cambios
+                    document.getElementById('btnBuscarSolicitud').click();
+                } else {
+                    const errorData = await response.json();
+                    mensajeActualizacionDiv.className = 'alert alert-danger';
+                    let errorMessage = 'Error al actualizar solicitud: ';
+                    if (response.status === 400 && errorData.errors) {
+                        for (const key in errorData.errors) {
+                            errorMessage += `${key}: ${errorData.errors[key].join(', ')} `;
+                        }
+                    } else {
+                        errorMessage += errorData.title || errorData.detail || JSON.stringify(errorData);
+                    }
+                    mensajeActualizacionDiv.innerHTML = errorMessage;
+                    console.error('Error del API:', errorData);
+                }
+            } catch (error) {
+                mensajeActualizacionDiv.className = 'alert alert-danger';
+                mensajeActualizacionDiv.innerHTML = `Ocurrió un error de red: ${error.message}.`;
+                console.error('Error de red al actualizar solicitud:', error);
+            }
+        });
+
+        // Event listener para el botón de cancelar solicitud (opcional)
+        document.getElementById('btnCancelarSolicitud').addEventListener('click', async function() {
+            if (!currentSolicitud || currentSolicitud.estado === 'Entregado' || currentSolicitud.estado === 'Cancelado') {
+                mensajeActualizacionDiv.className = 'alert alert-warning';
+                mensajeActualizacionDiv.innerHTML = 'No se puede cancelar una solicitud si no está cargada o ya está entregada/cancelada.';
+                return;
+            }
+
+            const confirmCancel = confirm(`¿Está seguro que desea CANCELAR la solicitud ID ${currentSolicitud.id}?`);
+            if (!confirmCancel) return;
+
+            mensajeActualizacionDiv.innerHTML = '';
+            mensajeActualizacionDiv.className = '';
+
+            const updatedSolicitud = {
+                id: currentSolicitud.id,
+                idRepuesto: currentSolicitud.idRepuesto,
+                idSolicitante: currentSolicitud.idSolicitante,
+                cantidadSolicitada: currentSolicitud.cantidadSolicitada,
+                fechaSolicitud: currentSolicitud.fechaSolicitud,
+                estado: "Cancelado", // Cambiar a cancelado
+                idEstado: 4,
+                idUsuarioEntrega: currentSolicitud.idUsuarioEntrega,
+                fechaEntrega: currentSolicitud.fechaEntrega,
+                observaciones: currentSolicitud.observaciones || null
+            };
+
+            try {
+                const response = await fetch(`${API_SOLICITUDES_URL}/${updatedSolicitud.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updatedSolicitud)
+                });
+
+                if (response.ok) {
+                    mensajeActualizacionDiv.className = 'alert alert-success';
+                    mensajeActualizacionDiv.innerHTML = `Solicitud ${updatedSolicitud.id} CANCELADA exitosamente.`;
+                    document.getElementById('btnBuscarSolicitud').click(); // Recargar para mostrar el nuevo estado
+                } else {
+                    const errorData = await response.json();
+                    mensajeActualizacionDiv.className = 'alert alert-danger';
+                    let errorMessage = 'Error al cancelar solicitud: ';
+                    if (response.status === 400 && errorData.errors) {
+                        for (const key in errorData.errors) {
+                            errorMessage += `${key}: ${errorData.errors[key].join(', ')} `;
+                        }
+                    } else {
+                        errorMessage += errorData.title || errorData.detail || JSON.stringify(errorData);
+                    }
+                    mensajeActualizacionDiv.innerHTML = errorMessage;
+                    console.error('Error del API al cancelar:', errorData);
+                }
+            } catch (error) {
+                mensajeActualizacionDiv.className = 'alert alert-danger';
+                mensajeActualizacionDiv.innerHTML = `Ocurrió un error de red: ${error.message}.`;
+                console.error('Error de red al cancelar solicitud:', error);
+            }
+        });
+
+
+        // Función para deshabilitar/habilitar campos del formulario
+        function disableFormFields(disable) {
+            $("#entregadoPorId").disabled = disable;
+            document.getElementById('fechaEntrega').disabled = disable;
+            document.getElementById('observaciones').disabled = disable;
+            document.getElementById('estado').disabled = disable;
+            formEntregarRepuesto.querySelector('button[type="submit"]').disabled = disable;
+            document.getElementById('btnCancelarSolicitud').disabled = disable;
+        }
+
+    </script>
+}

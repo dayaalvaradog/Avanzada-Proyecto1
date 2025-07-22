@@ -9,7 +9,12 @@ namespace TallerAutomotriz.UI.Controllers
             return View();
         }
 
-        public IActionResult AgregarRepuesto()
+        public IActionResult Agregar()
+        {
+            return View();
+        }
+
+        public IActionResult Entregar()
         {
             return View();
         }

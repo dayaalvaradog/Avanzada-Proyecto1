@@ -78,7 +78,7 @@ namespace TallerAutomotriz.API.Controllers
             return CreatedAtAction(nameof(ObtenerSolicitudPorId), new { id = solicitud.Id }, solicitud);
         }
 
-        [HttpPut("EntregarRepuesto/{id}/Entregar")]
+        [HttpPut("EntregarRepuesto/{id}")]
         public async Task<IActionResult> EntregarRepuesto(int id)
         {
             var solicitud = await _solicitudRepository.ObtenerSolicitudPorIdAsync(id);
@@ -111,7 +111,6 @@ namespace TallerAutomotriz.API.Controllers
             solicitud.IdEstado = 3; 
             solicitud.Estado = "Entregada";
             solicitud.FechaEntrega = DateTime.Now;
-            solicitud.IdUsuarioEntrega = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
             await _solicitudRepository.ModificarSolicitudAsync(solicitud);
 
