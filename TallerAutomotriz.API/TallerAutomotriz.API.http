@@ -1,6 +1,0 @@
-@TallerAutomotriz.API_HostAddress = http://localhost:5103
-
-GET {{TallerAutomotriz.API_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
