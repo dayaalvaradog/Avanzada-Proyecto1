@@ -4,16 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TallerAutomotriz.Core.Entities
+namespace TallerAutomotriz.Core.Models
 {
-    public class Usuario
+    public class AuthResponse
     {
+        public string Token { get; set; }
         public int Id { get; set; }
         public string Nombre { get; set; }
         public string Apellido { get; set; }
         public string Correo { get; set; }
-        public string HashContrasena { get; set; }
-        public string Rol { get; set; } = "Empleado";
-        public bool Activo { get; set; } = true;
+        public string Rol { get; set; }
     }
 }

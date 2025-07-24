@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - TallerAutomotriz.UI</title>
+    <title>@ViewData["Title"] - TallerAutomotriz DAG</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/TallerAutomotriz.UI.styles.css" asp-append-version="true" />
@@ -12,7 +12,7 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">TallerAutomotriz.UI</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">TallerAutomotriz DAG</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -20,19 +20,40 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Inicio</a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item" id="navNuevoColaborador" style="display:none;">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Usuario" asp-action="Colaborador">Colaboradores</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Repuesto" asp-action="Repuesto">Inventario</a>
+                        <li class="nav-item" id="navNuevoRepuesto" style="display:none;">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Repuesto" asp-action="Repuesto">Repuestos</a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item" id="navNuevaSolicitud" style="display:none;">
                             <a class="nav-link text-dark" asp-area="" asp-controller="SolicitudRepuesto" asp-action="SolicitudRepuesto">Solicitudes</a>
                         </li>
+                        <li class="nav-item" id="navEntregarRepuesto" style="display:none;">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="SolicitudRepuesto" asp-action="Entregar">Entregas</a>
+                        </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacidad</a>
+                        </li>
+                    </ul>
+
+                    <ul class="navbar-nav">
+                        <li class="nav-item" id="navLogin">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Iniciar Sesión</a>
+                        </li>
+                        <li class="nav-item" id="navRegistrarse">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Registrarse">Registrarse</a>
+                        </li>
+                        <li class="nav-item dropdown" id="navUserInfo" style="display:none;">
+                            <a class="nav-link itemsHeader" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="nav-link text-dark" id="loggedInUser"></span>
+                            </a>
+                            <div class="dropdown-menu menu-apc" aria-labelledby="dropdownMenuButton" x-placement="bottom-start">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Usuario" asp-action="MiPerfil">Mi Perfil</a>
+                                <a class="nav-link text-dark" onclick="CerrarSesion();" id="logoutButton">Cerrar Sesión</a>
+                            </div>
                         </li>
                     </ul>
                 </div>
@@ -53,6 +74,61 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+<script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const token = localStorage.getItem('jwtToken');
+            const userData = JSON.parse(localStorage.getItem('userData'));
+
+            const navLogin = document.getElementById('navLogin');
+            const navRegistrarse = document.getElementById('navRegistrarse');
+            const navUserInfo = document.getElementById('navUserInfo');
+            const loggedInUserSpan = document.getElementById('loggedInUser');
+
+            // Opciones de menú a controlar
+            const navNuevoColaborador = document.getElementById('navNuevoColaborador');
+            const navNuevoRepuesto = document.getElementById('navNuevoRepuesto');
+            const navNuevaSolicitud = document.getElementById('navNuevaSolicitud');
+            const navEntregarRepuesto = document.getElementById('navEntregarRepuesto');
+
+            if (token && userData) {
+                // Usuario autenticado
+                navLogin.style.display = 'none';
+                navRegistrarse.style.display = 'none';
+                navUserInfo.style.display = 'block';
+                loggedInUserSpan.textContent = `Bienvenido, ${userData.nombre} (${userData.rol})`;
+
+                // Mostrar opciones según el rol
+                if (userData.rol === 'Administrador') {
+                    navNuevoColaborador.style.display = 'block';
+                    navNuevoRepuesto.style.display = 'block';
+                    navNuevaSolicitud.style.display = 'block';
+                    navEntregarRepuesto.style.display = 'block';
+                } else if (userData.rol === 'Empleado') {
+                    navNuevoRepuesto.style.display = 'block';
+                    navNuevaSolicitud.style.display = 'block';
+                    navEntregarRepuesto.style.display = 'block';
+                }
+            } else {
+                // Usuario no autenticado
+                navLogin.style.display = 'block';
+                navRegistrarse.style.display = 'block';
+                navUserInfo.style.display = 'none';
+
+                // Ocultar todas las opciones protegidas
+                navNuevoColaborador.style.display = 'none';
+                navNuevoRepuesto.style.display = 'none';
+                navNuevaSolicitud.style.display = 'none';
+                navEntregarRepuesto.style.display = 'none';
+            }
+        });
+
+        function CerrarSesion() {
+            localStorage.removeItem('jwtToken');
+            localStorage.removeItem('userData');
+            window.location.href = '/Account/Login';
+        };
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

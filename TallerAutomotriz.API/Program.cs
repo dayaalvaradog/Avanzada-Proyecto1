@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using System.Text.Json.Serialization;
 using TallerAutomotriz.DataAccess.Data;
 using TallerAutomotriz.DataAccess.Interfaces;
@@ -27,6 +30,29 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<IUsuario, UsuarioAD>();
 builder.Services.AddScoped<IRepuesto, RepuestoAD>();
 builder.Services.AddScoped<ISolicitudRepuesto, SolicitudRepuestoAD>();
+
+var jwtSecretKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrEmpty(jwtSecretKey))
+{
+    throw new InvalidOperationException("Jwt:Key no está configurado en appsettings.json.");
+}
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey))
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 

@@ -17,6 +17,15 @@ namespace TallerAutomotriz.UI.Controllers
         {
             return View();
         }
+        public IActionResult MiPerfil()
+        {
+            return View("EditarUsuario"); 
+        }
+
+        public IActionResult EditarUsuario(int id)
+        {
+            return View();
+        }
 
 
     }

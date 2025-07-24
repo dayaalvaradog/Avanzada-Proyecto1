@@ -43,6 +43,7 @@ namespace TallerAutomotriz.DataAccess.Repositories
         public async Task ModificarUsuarioAsync(Usuario usuario)
         {
             _context.Usuarios.Update(usuario);
+            await _context.SaveChangesAsync();
         }
 
         public async Task EliminarUsuarioAsync(int id)
@@ -51,6 +52,7 @@ namespace TallerAutomotriz.DataAccess.Repositories
             if (usuario != null)
             {
                 _context.Usuarios.Remove(usuario);
+                await _context.SaveChangesAsync();
             }
         }
 
