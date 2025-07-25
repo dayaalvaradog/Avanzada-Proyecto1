@@ -64,6 +64,7 @@ namespace TallerAutomotriz.API.Controllers
         }
 
         [HttpPost("RegistrarUsuario")]
+        [AllowAnonymous]
         public async Task<ActionResult<Usuario>> RegistrarUsuario([FromBody] Usuario usuario)
         {
             if (await _usuarioRepository.ObtenerUsuarioPorCorreoAsync(usuario.Correo) != null)
@@ -118,7 +119,7 @@ namespace TallerAutomotriz.API.Controllers
                 usuarioExistente.Correo = usuario.Correo;
                 usuarioExistente.Rol = usuario.Rol; 
 
-                if (!string.IsNullOrEmpty(usuario.HashContrasena) && !BCrypt.Net.BCrypt.Verify(usuario.HashContrasena, usuarioExistente.HashContrasena))
+                if (!string.IsNullOrEmpty(usuario.HashContrasena) && (usuario.HashContrasena != usuarioExistente.HashContrasena))
                 {
                     usuarioExistente.HashContrasena = BCrypt.Net.BCrypt.HashPassword(usuario.HashContrasena);
                 }

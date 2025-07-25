@@ -1,0 +1,155 @@
+﻿@{
+    ViewData["Title"] = "Editar Perfil";
+}
+
+<h1>Modificar Repuesto</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <form id="formEditarRepuesto">
+            <input type="hidden" id="repuestoId" name="Id" />
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" class="form-control" id="nombre" name="nombre" required>
+            </div>
+
+            <div class="form-group" style="display:none;">
+                <label for="numeroParte">Número de Parte:</label>
+                <input type="text" class="form-control" id="numeroParte" name="numeroParte" required>
+            </div>
+            <div class="form-group">
+                <label for="ubicacion">Ubicación:</label>
+                <input type="text" class="form-control" id="ubicacion" name="ubicacion" required>
+            </div>
+            <div class="form-group" style="display:none;">
+                <label for="descripcion">Descripción:</label>
+                <textarea class="form-control" id="descripcion" name="descripcion" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="precioUnitario">Precio Unitario:</label>
+                <input type="number" step="0.01" class="form-control" id="precioUnitario" name="precioUnitario" required>
+            </div>
+            <div class="form-group">
+                <label for="cantidadDisponible">Cantidad Disponible:</label>
+                <input type="number" class="form-control" id="cantidadDisponible" name="cantidadDisponible" required>
+            </div>
+            <br />
+            <button type="submit" class="btn btn-primary">Modificar Repuesto</button>
+        </form>
+        <div id="mensajeEdicion" class="mt-3"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const API_BASE_URL = "https://localhost:7002";
+        const API_REPUESTOS_URL = `${API_BASE_URL}/api/Repuesto`;
+        const mensajeEdicionDiv = document.getElementById('mensajeEdicion');
+        const repuestoIdField = document.getElementById('repuestoId');
+
+        let loggedInUserRole = '';
+
+        // Se obtiene los datos del usuario logueado
+        function getLoggedInUserData() {
+            const userDataString = localStorage.getItem('userData');
+            return userDataString ? JSON.parse(userDataString) : null;
+        }
+
+        // Cargar datos del repuesto al cargar la página
+        document.addEventListener('DOMContentLoaded', async function () {
+            const loggedInUserData = getLoggedInUserData();
+            if (!loggedInUserData) {
+                window.location.href = '/Account/Login';
+                return;
+            }
+            loggedInUserRole = loggedInUserData.rol;
+
+            let targetRepuestoId = @Html.Raw(Json.Serialize(ViewContext.RouteData.Values["id"]));
+
+            if (loggedInUserRole !== 'EncargadoBodega') {
+                mensajeEdicionDiv.className = 'alert alert-danger';
+                mensajeEdicionDiv.innerHTML = 'No tiene permisos para editar este repuesto.';
+                document.getElementById('formEditarRepuesto').style.display = 'none'; // Ocultar formulario
+                return;
+            }
+
+            // Cargar datos del repuesto
+            try {
+                const response = await fetch(`${API_REPUESTOS_URL}/ObtenerRepuestoPorId/${targetRepuestoId}`);
+                if (response.ok) {
+                    const respuesto = await response.json();
+                    const repuestoIdField = document.getElementById('repuestoId');
+                    repuestoIdField.value = respuesto.id;
+                    document.getElementById('nombre').value = respuesto.nombre;
+                    document.getElementById('numeroParte').value = respuesto.numeroParte;
+                    document.getElementById('ubicacion').value = respuesto.ubicacion;
+                    document.getElementById('descripcion').value = respuesto.descripcion;
+                    document.getElementById('precioUnitario').value = respuesto.precioUnitario;
+                    document.getElementById('cantidadDisponible').value = respuesto.cantidadDisponible;
+                } else {
+                    const errorData = await response.json();
+                    mensajeEdicionDiv.className = 'alert alert-danger';
+                    mensajeEdicionDiv.innerHTML = `Error al cargar datos del repuesto: ${errorData.message || JSON.stringify(errorData)}`;
+                    // document.getElementById('formEditarRepuesto').style.display = 'none';
+                }
+            } catch (error) {
+                mensajeEdicionDiv.className = 'alert alert-danger';
+                mensajeEdicionDiv.innerHTML = `Ocurrió un error de red al cargar datos del repuesto: ${error.message}.`;
+                document.getElementById('formEditarRepuesto').style.display = 'none';
+            }
+        });
+
+        document.getElementById('formEditarRepuesto').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const mensajeDiv = document.getElementById('mensajeEdicion');
+            const repuestoIdField = document.getElementById('repuestoId');
+            mensajeDiv.innerHTML = '';
+
+            const nombre = document.getElementById('nombre').value;
+            const numeroparte = document.getElementById('numeroParte').value;
+            const ubicacion = document.getElementById('ubicacion').value;
+            const descr = document.getElementById('descripcion').value;
+
+            let repuestoData = {
+                id: parseInt(repuestoIdField.value),
+                nombre: nombre,
+                numeroParte: numeroparte,
+                ubicacion: ubicacion,
+                descripcion: descr,
+                precioUnitario: parseFloat(document.getElementById('precioUnitario').value),
+                cantidadDisponible: parseInt(document.getElementById('cantidadDisponible').value)
+            };
+
+            try {
+                const response = await fetch(`${API_REPUESTOS_URL}/ModificarRepuesto/${repuestoData.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(repuestoData)
+                });
+
+                if (response.ok) {
+                    mensajeEdicionDiv.className = 'alert alert-success';
+                    mensajeEdicionDiv.innerHTML = `Repuesto actualizado exitosamente.`;
+                } else {
+                    const errorData = await response.json();
+                    mensajeEdicionDiv.className = 'alert alert-danger';
+                    let errorMessage = 'Error al actualizar el repuesto: ';
+                    if (response.status === 400 && errorData.errors) {
+                        for (const key in errorData.errors) {
+                            errorMessage += `${key}: ${errorData.errors[key].join(', ')} `;
+                        }
+                    } else {
+                        errorMessage += errorData.title || errorData.detail || JSON.stringify(errorData);
+                    }
+                    mensajeEdicionDiv.innerHTML = errorMessage;
+                }
+            } catch (error) {
+                mensajeEdicionDiv.className = 'alert alert-danger';
+                mensajeEdicionDiv.innerHTML = `Ocurrió un error de red: ${error.message}.`;
+
+            }
+        });
+    </script>
+}

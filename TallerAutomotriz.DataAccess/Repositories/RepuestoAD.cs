@@ -37,6 +37,7 @@ namespace TallerAutomotriz.DataAccess.Repositories
         public async Task ModificarRepuestoAsync(Repuesto repuesto)
         {
             _context.Repuestos.Update(repuesto);
+            await _context.SaveChangesAsync();
         }
 
         public async Task EliminarRepuestoAsync(int id)
@@ -45,6 +46,7 @@ namespace TallerAutomotriz.DataAccess.Repositories
             if (repuesto != null)
             {
                 _context.Repuestos.Remove(repuesto);
+                await _context.SaveChangesAsync();
             }
         }
 

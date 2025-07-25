@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TallerAutomotriz.Core.Entities;
 using TallerAutomotriz.DataAccess.Interfaces;
 
@@ -10,13 +12,16 @@ namespace TallerAutomotriz.API.Controllers
     public class RepuestoController : ControllerBase
     {
         private readonly IRepuesto _repuestoRepository;
+        private readonly IConfiguration _configuration;
 
-        public RepuestoController(IRepuesto repuestoRepository)
+        public RepuestoController(IRepuesto repuestoRepository, IConfiguration configuration)
         {
-            _repuestoRepository = repuestoRepository;
+            _repuestoRepository = repuestoRepository;   
+            _configuration = configuration;
         }
 
         [HttpGet("ObtenerRepuestos")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<Repuesto>>> ObtenerRepuestos()
         {
             var repuestos = await _repuestoRepository.ObtenerRepuestosAsync();
@@ -24,6 +29,7 @@ namespace TallerAutomotriz.API.Controllers
         }
 
         [HttpGet("ObtenerRepuestoPorId/{id}")]
+        [Authorize]
         public async Task<ActionResult<Repuesto>> ObtenerRepuestoPorId(int id)
         {
             var repuesto = await _repuestoRepository.ObtenerRepuestoPorIdAsync(id);
@@ -35,6 +41,7 @@ namespace TallerAutomotriz.API.Controllers
         }
 
         [HttpPost("InsertarRepuesto")]
+        [Authorize(Roles = "EncargadoBodega")]
         public async Task<ActionResult<Repuesto>> InsertarRepuesto([FromBody] Repuesto repuesto)
         {
             if (repuesto.CantidadDisponible < 0 || repuesto.PrecioUnitario < 0)
@@ -49,6 +56,7 @@ namespace TallerAutomotriz.API.Controllers
         }
 
         [HttpPut("ModificarRepuesto/{id}")]
+        [Authorize]
         public async Task<IActionResult> ModificarRepuesto(int id, [FromBody] Repuesto repuesto)
         {
             if (id != repuesto.Id)
@@ -69,12 +77,23 @@ namespace TallerAutomotriz.API.Controllers
             repuestoExistente.PrecioUnitario = repuesto.PrecioUnitario;
             repuestoExistente.Ubicacion = repuesto.Ubicacion;
 
-            await _repuestoRepository.ModificarRepuestoAsync(repuestoExistente);
-            if (await _repuestoRepository.GuardarCambiosAsync())
+            try
             {
-                return NoContent();
+                await _repuestoRepository.ModificarRepuestoAsync(repuestoExistente);
             }
-            return StatusCode(500, "Error al actualizar el repuesto.");
+            catch (DbUpdateConcurrencyException)
+            {
+                if (await _repuestoRepository.ObtenerRepuestoPorIdAsync(id) == null)
+                {
+                    return NotFound("Error de concurrencia: El repuesto ya no existe.");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent(); // 204 No Content
         }
     }
 }

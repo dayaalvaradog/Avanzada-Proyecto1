@@ -18,5 +18,10 @@ namespace TallerAutomotriz.UI.Controllers
         {
             return View();
         }
+
+        public IActionResult ModificarRepuesto(int id)
+        {
+            return View();
+        }
     }
 }

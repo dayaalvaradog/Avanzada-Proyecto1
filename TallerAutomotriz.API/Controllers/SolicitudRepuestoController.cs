@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TallerAutomotriz.Core.Entities;
@@ -14,17 +15,21 @@ namespace TallerAutomotriz.API.Controllers
         private readonly ISolicitudRepuesto _solicitudRepository;
         private readonly IRepuesto _repuestoRepository;
         private readonly IUsuario _usuarioRepository; // Necesario para obtener el usuario actual
+        private readonly IConfiguration _configuration;
 
         public SolicitudRepuestoController(ISolicitudRepuesto solicitudRepository,
                                             IRepuesto repuestoRepository,
-                                            IUsuario usuarioRepository)
+                                            IUsuario usuarioRepository,
+                                            IConfiguration configuration)
         {
             _solicitudRepository = solicitudRepository;
             _repuestoRepository = repuestoRepository;
             _usuarioRepository = usuarioRepository;
+            _configuration = configuration;
         }
 
         [HttpGet("ObtenerSolicitudes")]
+        [Authorize(Roles = "Administrador, EncargadoBodega, Empleado")]
         public async Task<ActionResult<IEnumerable<SolicitudRepuesto>>> ObtenerSolicitudes()
         {
             var solicitudes = await _solicitudRepository.ObtenerSolicitudesAsync();
@@ -32,6 +37,7 @@ namespace TallerAutomotriz.API.Controllers
         }
 
         [HttpGet("PorMecanico/{solicitanteId}")]
+        [Authorize(Roles = "EncargadoBodega, Empleado")]
         public async Task<ActionResult<IEnumerable<SolicitudRepuesto>>> ObtenerSolicitudesPorIdSolicitante(int solicitanteId)
         {
             var solicitudes = await _solicitudRepository.ObtenerSolicitudesPorIdSolicitanteAsync(solicitanteId);
@@ -39,6 +45,7 @@ namespace TallerAutomotriz.API.Controllers
         }
 
         [HttpGet("ObtenerSolicitudPorId/{id}")]
+        [Authorize(Roles = "EncargadoBodega, Empleado")]
         public async Task<ActionResult<SolicitudRepuesto>> ObtenerSolicitudPorId(int id)
         {
             var solicitud = await _solicitudRepository.ObtenerSolicitudPorIdAsync(id);
@@ -50,6 +57,7 @@ namespace TallerAutomotriz.API.Controllers
         }
 
         [HttpPost("InsertarSolicitudRepuesto")]
+        [Authorize(Roles = "Empleado")]
         public async Task<ActionResult<SolicitudRepuesto>> InsertarSolicitudRepuesto([FromBody] SolicitudRepuesto solicitud)
         {
             if (solicitud.CantidadSolicitada <= 0)
@@ -79,6 +87,7 @@ namespace TallerAutomotriz.API.Controllers
         }
 
         [HttpPut("EntregarRepuesto/{id}")]
+        [Authorize(Roles = "EncargadoBodega")]
         public async Task<IActionResult> EntregarRepuesto(int id)
         {
             var solicitud = await _solicitudRepository.ObtenerSolicitudPorIdAsync(id);
@@ -124,6 +133,7 @@ namespace TallerAutomotriz.API.Controllers
         }
 
         [HttpPut("RechazarSolicitud/{id}/Rechazar")]
+        [Authorize(Roles = "EncargadoBodega")]
         public async Task<IActionResult> RechazarSolicitud(int id)
         {
             var solicitud = await _solicitudRepository.ObtenerSolicitudPorIdAsync(id);

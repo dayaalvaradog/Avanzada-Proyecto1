@@ -13,7 +13,8 @@
             <div class="card-body">
                 <form id="editProfileForm">
                     <input type="hidden" id="userId" name="Id" />
-                    <input type="hidden" id="hashContrasena" name="HashContrasena" /> <div class="form-group">
+                    <input type="hidden" id="hashContrasena" name="HashContrasena" /> 
+                    <div class="form-group">
                         <label for="nombre">Nombre:</label>
                         <input type="text" class="form-control" id="nombre" name="Nombre" required>
                     </div>
@@ -30,6 +31,7 @@
                         <label for="rol">Rol:</label>
                         <select class="form-control" id="rol" name="Rol">
                             <option value="Administrador">Administrador</option>
+                            <option value="EncargadoBodega">Encargado de Bodega</option>
                             <option value="Empleado">Empleado</option>
                         </select>
                     </div>
@@ -56,6 +58,7 @@
         const mensajeEdicionDiv = document.getElementById('mensajeEdicion');
         const userIdField = document.getElementById('userId');
         const hashContrasenaField = document.getElementById('hashContrasena');
+        const nuevaContrasenaField = document.getElementById('nuevaContrasena');
         const rolGroup = document.getElementById('rolGroup');
         const rolSelect = document.getElementById('rol');
 
@@ -107,7 +110,7 @@
                     document.getElementById('apellido').value = user.apellido;
                     document.getElementById('correo').value = user.correo;
                     hashContrasenaField.value = user.hashContrasena; // Almacenar el hash original
-
+                    
                     if (loggedInUserRole === 'Administrador') {
                         rolSelect.value = user.rol;
                     }
@@ -147,10 +150,11 @@
             // Si es admin, puede enviar el rol modificado
             if (loggedInUserRole === 'Administrador') {
                 updatedUser.rol = rol;
-                // Si viene una nueva contraseña, la usa
-                if (nuevaContrasena) {
-                    updatedUser.hashContrasena = nuevaContrasena;
-                }
+                
+            }
+            // Si viene una nueva contraseña, la usa
+            if (nuevaContrasena === "") {
+                updatedUser.hashContrasena = nuevaContrasena;
             }
 
             try {

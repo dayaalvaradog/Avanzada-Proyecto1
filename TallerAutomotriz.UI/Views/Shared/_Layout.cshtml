@@ -22,17 +22,17 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Inicio</a>
                         </li>
-                        <li class="nav-item" id="navNuevoColaborador" style="display:none;">
+                        <li class="nav-item" id="navColaborador" style="display:none;">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Usuario" asp-action="Colaborador">Colaboradores</a>
                         </li>
-                        <li class="nav-item" id="navNuevoRepuesto" style="display:none;">
+                        <li class="nav-item" id="navRepuesto" style="display:none;">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Repuesto" asp-action="Repuesto">Repuestos</a>
                         </li>
-                        <li class="nav-item" id="navNuevaSolicitud" style="display:none;">
+                        <li class="nav-item" id="navSolicitud" style="display:none;">
                             <a class="nav-link text-dark" asp-area="" asp-controller="SolicitudRepuesto" asp-action="SolicitudRepuesto">Solicitudes</a>
                         </li>
                         <li class="nav-item" id="navEntregarRepuesto" style="display:none;">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="SolicitudRepuesto" asp-action="Entregar">Entregas</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Repuesto" asp-action="Entregar">Entregas</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacidad</a>
@@ -100,14 +100,20 @@
 
                 // Mostrar opciones según el rol
                 if (userData.rol === 'Administrador') {
-                    navNuevoColaborador.style.display = 'block';
-                    navNuevoRepuesto.style.display = 'block';
-                    navNuevaSolicitud.style.display = 'block';
+                    navColaborador.style.display = 'block';
+                    navRepuesto.style.display = 'none';
+                    navSolicitud.style.display = 'none';
+                    navEntregarRepuesto.style.display = 'none';
+                } else if (userData.rol === 'EncargadoBodega') {
+                    navColaborador.style.display = 'none';
+                    navRepuesto.style.display = 'block';
+                    navSolicitud.style.display = 'none';
                     navEntregarRepuesto.style.display = 'block';
-                } else if (userData.rol === 'Empleado') {
-                    navNuevoRepuesto.style.display = 'block';
-                    navNuevaSolicitud.style.display = 'block';
-                    navEntregarRepuesto.style.display = 'block';
+                }else if (userData.rol === 'Empleado') {
+                    navColaborador.style.display = 'none';
+                    navRepuesto.style.display = 'none';
+                    navSolicitud.style.display = 'block';
+                    navEntregarRepuesto.style.display = 'none';
                 }
             } else {
                 // Usuario no autenticado
@@ -116,9 +122,9 @@
                 navUserInfo.style.display = 'none';
 
                 // Ocultar todas las opciones protegidas
-                navNuevoColaborador.style.display = 'none';
-                navNuevoRepuesto.style.display = 'none';
-                navNuevaSolicitud.style.display = 'none';
+                navColaborador.style.display = 'none';
+                navRepuesto.style.display = 'none';
+                navSolicitud.style.display = 'none';
                 navEntregarRepuesto.style.display = 'none';
             }
         });
