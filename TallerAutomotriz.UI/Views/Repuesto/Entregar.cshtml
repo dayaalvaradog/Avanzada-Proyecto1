@@ -177,7 +177,7 @@
             const observaciones = document.getElementById('observaciones').value;
 
             const updatedSolicitud = {
-                id: currentSolicitud.id,
+                id: parseInt(currentSolicitud.id),
                 idRepuesto: currentSolicitud.idRepuesto, 
                 idSolicitante: currentSolicitud.idSolicitante, 
                 cantidadSolicitada: currentSolicitud.cantidadSolicitada, 

@@ -15,7 +15,7 @@
             </div>
             <div class="form-group">
                 <label for="solicitanteId">ID del Solicitante:</label>
-                <input type="number" class="form-control" id="solicitanteId" name="solicitanteId" required>
+                <input type="number" class="form-control" id="solicitanteId" name="solicitanteId" required disabled style="display:none">
                 <small class="form-text text-muted">Ingresa el ID del usuario que solicita el repuesto.</small>
             </div>
             <div class="form-group">
@@ -46,6 +46,13 @@
             const day = today.getDate().toString().padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
+        // Se obtiene los datos del usuario logueado
+        function getLoggedInUserData() {
+            const userDataString = localStorage.getItem('userData');
+            return userDataString ? JSON.parse(userDataString) : null;
+        }
+        const loggedInUserData = getLoggedInUserData();
+        const idUsuario = parseInt(loggedInUserData.id);
 
         document.addEventListener('DOMContentLoaded', (event) => {
             document.getElementById('fechaSolicitud').value = getCurrentDate();
@@ -60,7 +67,7 @@
             const formData = new FormData(this);
             const solicitudData = {
                 idRepuesto: parseInt(formData.get('repuestoId')),
-                idSolicitante: parseInt(formData.get('solicitanteId')),
+                idSolicitante: idUsuario,
                 cantidadSolicitada: parseInt(formData.get('cantidadSolicitada')),
                 fechaSolicitud: formData.get('fechaSolicitud'), // Formato YYYY-MM-DD
                 observaciones: formData.get('observaciones') || null 
