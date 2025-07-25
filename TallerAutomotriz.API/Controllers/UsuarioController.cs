@@ -56,6 +56,23 @@ namespace TallerAutomotriz.API.Controllers
 
             // Hashear la contraseña antes de guardar
             usuario.HashContrasena = BCrypt.Net.BCrypt.HashPassword(usuario.HashContrasena);
+            
+            await _usuarioRepository.InsertarUsuarioAsync(usuario);
+            await _usuarioRepository.GuardarCambiosAsync();
+
+            return CreatedAtAction(nameof(ObtenerUsuarioPorId), new { id = usuario.Id }, usuario);
+        }
+
+        [HttpPost("RegistrarUsuario")]
+        public async Task<ActionResult<Usuario>> RegistrarUsuario([FromBody] Usuario usuario)
+        {
+            if (await _usuarioRepository.ObtenerUsuarioPorCorreoAsync(usuario.Correo) != null)
+            {
+                return Conflict("El correo electrónico ya está registrado.");
+            }
+
+            // Hashear la contraseña antes de guardar
+            usuario.HashContrasena = BCrypt.Net.BCrypt.HashPassword(usuario.HashContrasena);
             usuario.Rol = usuario.Rol ?? "Empleado";
 
             await _usuarioRepository.InsertarUsuarioAsync(usuario);
