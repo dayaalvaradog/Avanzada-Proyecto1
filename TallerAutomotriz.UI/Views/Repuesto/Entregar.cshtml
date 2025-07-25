@@ -43,7 +43,7 @@
                 <label>Fecha de Solicitud:</label>
                 <input type="date" class="form-control" id="fechaSolicitudDisplay" disabled>
             </div>
-            <div class="form-group">
+            <div class="form-group" style="display:none;">
                 <label for="idUsuarioEntrega">ID del Usuario que Entrega:</label>
                 <input type="number" class="form-control" id="idUsuarioEntrega" name="idUsuarioEntrega" required>
                 <small class="form-text text-muted">ID del usuario que realiza la entrega. Ej: un empleado.</small>
@@ -171,8 +171,17 @@
             mensajeActualizacionDiv.innerHTML = '';
             mensajeActualizacionDiv.className = '';
 
+
+            // Se obtiene los datos del usuario logueado
+            function getLoggedInUserData() {
+                const userDataString = localStorage.getItem('userData');
+                return userDataString ? JSON.parse(userDataString) : null;
+            }
+            const loggedInUserData = getLoggedInUserData();
+            const idUsuario = parseInt(loggedInUserData.id);
+
+
             const estado = document.getElementById('estado').value;
-            const idUsuarioEntrega = $("#idUsuarioEntrega").val();
             const fechaEntrega = document.getElementById('fechaEntrega').value;
             const observaciones = document.getElementById('observaciones').value;
 
@@ -184,17 +193,10 @@
                 fechaSolicitud: currentSolicitud.fechaSolicitud, 
                 estado: estado,
                 idEstado: 5,
-                idUsuarioEntrega: idUsuarioEntrega ? parseInt(idUsuarioEntrega) : null,
+                idUsuarioEntrega: idUsuario,
                 fechaEntrega: fechaEntrega ? fechaEntrega : null,
                 observaciones: observaciones || null
             };
-
-            // Validaciones del lado del cliente para Entregar
-            if (estado === 'Entregado' && (!idUsuarioEntrega || !fechaEntrega)) {
-                mensajeActualizacionDiv.className = 'alert alert-warning';
-                mensajeActualizacionDiv.innerHTML = 'Para cambiar el estado a "Entregado", debe especificar el ID del usuario que entrega y la Fecha de Entrega.';
-                return;
-            }
 
             try {
                 const response = await fetch(`${API_SOLICITUDES_URL}/EntregarRepuesto/${updatedSolicitud.id}`, {

@@ -54,6 +54,7 @@ namespace TallerAutomotriz.DataAccess.Repositories
         public async Task ModificarSolicitudAsync(SolicitudRepuesto solicitud)
         {
             _context.SolicitudesRepuesto.Update(solicitud);
+            await _context.SaveChangesAsync();
         }
 
         public async Task EliminarSolicitudAsync(int id)
@@ -62,6 +63,7 @@ namespace TallerAutomotriz.DataAccess.Repositories
             if (solicitud != null)
             {
                 _context.SolicitudesRepuesto.Remove(solicitud);
+                await _context.SaveChangesAsync();
             }
         }
 
