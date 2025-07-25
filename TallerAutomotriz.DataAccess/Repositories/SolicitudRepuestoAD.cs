@@ -34,6 +34,7 @@ namespace TallerAutomotriz.DataAccess.Repositories
                 .Where(s => s.IdSolicitante == solicitanteId)
                 .Include(s => s.Repuesto)
                 .ToListAsync();
+            
         }
 
         public async Task<SolicitudRepuesto> ObtenerSolicitudPorIdAsync(int id)

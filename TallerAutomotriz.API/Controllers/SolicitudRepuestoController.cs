@@ -36,11 +36,28 @@ namespace TallerAutomotriz.API.Controllers
             return Ok(solicitudes);
         }
 
-        [HttpGet("PorMecanico/{solicitanteId}")]
+        [HttpGet("ObtenerSolicitudesPorIdSolicitante/{solicitanteId}")]
         [Authorize(Roles = "EncargadoBodega, Empleado")]
         public async Task<ActionResult<IEnumerable<SolicitudRepuesto>>> ObtenerSolicitudesPorIdSolicitante(int solicitanteId)
         {
             var solicitudes = await _solicitudRepository.ObtenerSolicitudesPorIdSolicitanteAsync(solicitanteId);
+            foreach (var solicitud in solicitudes)
+            {
+                var usuario = await _usuarioRepository.ObtenerUsuarioPorIdAsync(solicitud.IdSolicitante);
+                if (usuario != null)
+                {
+                    solicitud.Solicitante = usuario; // 
+                }
+                if (solicitud.IdUsuarioEntrega.HasValue)
+                {
+                    var usuarioEntrega = await _usuarioRepository.ObtenerUsuarioPorIdAsync(solicitud.IdUsuarioEntrega.Value);
+                    if (usuarioEntrega != null)
+                    {
+                        solicitud.UsuarioEntrega = usuarioEntrega; // Asignar el usuario que entregó el repuesto
+                    }
+                }
+                solicitud.Repuesto = await _repuestoRepository.ObtenerRepuestoPorIdAsync(solicitud.IdRepuesto);
+            }
             return Ok(solicitudes);
         }
 
