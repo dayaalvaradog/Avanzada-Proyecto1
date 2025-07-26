@@ -45,7 +45,7 @@
             </div>
             <div class="form-group" style="display:none;">
                 <label for="idUsuarioEntrega">ID del Usuario que Entrega:</label>
-                <input type="number" class="form-control" id="idUsuarioEntrega" name="idUsuarioEntrega" required>
+                <input type="number" class="form-control" id="idUsuarioEntrega" name="idUsuarioEntrega">
                 <small class="form-text text-muted">ID del usuario que realiza la entrega. Ej: un empleado.</small>
             </div>
             <div class="form-group">
@@ -100,7 +100,14 @@
             mensajeBusquedaDiv.innerHTML = '';
             mensajeBusquedaDiv.className = '';
             formEntregarRepuesto.style.display = 'none'; // Ocultar formulario hasta que se encuentre la solicitud
-
+            
+            // Se obtiene los datos del usuario logueado
+            function getLoggedInUserData() {
+                const userDataString = localStorage.getItem('userData');
+                return userDataString ? JSON.parse(userDataString) : null;
+            }
+            const loggedInUserData = getLoggedInUserData();
+            const idUsuario = parseInt(loggedInUserData.id);
             if (!idSolicitud) {
                 mensajeBusquedaDiv.className = 'alert alert-warning';
                 mensajeBusquedaDiv.innerHTML = 'Por favor, ingrese un ID de solicitud.';
@@ -127,7 +134,7 @@
                     document.getElementById('cantidadSolicitadaDisplay').value = currentSolicitud.cantidadSolicitada;
                     document.getElementById('fechaSolicitudDisplay').value = currentSolicitud.fechaSolicitud.split('T')[0]; // Solo fecha
 
-                    $("#entregadoPorId").value = currentSolicitud.usuarioEntrega || '';
+                    $("#idUsuarioEntrega").value = idUsuario;
                     document.getElementById('fechaEntrega').value = currentSolicitud.fechaEntrega ? currentSolicitud.fechaEntrega.split('T')[0] : getCurrentDate();
                     document.getElementById('observaciones').value = currentSolicitud.observaciones || '';
                     document.getElementById('estado').value = currentSolicitud.estado;
@@ -171,62 +178,41 @@
             mensajeActualizacionDiv.innerHTML = '';
             mensajeActualizacionDiv.className = '';
 
-
-            // Se obtiene los datos del usuario logueado
-            function getLoggedInUserData() {
-                const userDataString = localStorage.getItem('userData');
-                return userDataString ? JSON.parse(userDataString) : null;
-            }
-            const loggedInUserData = getLoggedInUserData();
-            const idUsuario = parseInt(loggedInUserData.id);
-
-
-            const estado = document.getElementById('estado').value;
-            const fechaEntrega = document.getElementById('fechaEntrega').value;
-            const observaciones = document.getElementById('observaciones').value;
-
-            const updatedSolicitud = {
-                id: parseInt(currentSolicitud.id),
-                idRepuesto: currentSolicitud.idRepuesto, 
-                idSolicitante: currentSolicitud.idSolicitante, 
-                cantidadSolicitada: currentSolicitud.cantidadSolicitada, 
-                fechaSolicitud: currentSolicitud.fechaSolicitud, 
-                estado: estado,
-                idEstado: 5,
-                idUsuarioEntrega: idUsuario,
-                fechaEntrega: fechaEntrega ? fechaEntrega : null,
-                observaciones: observaciones || null
-            };
-
             try {
-                const response = await fetch(`${API_SOLICITUDES_URL}/EntregarRepuesto/${updatedSolicitud.id}`, {
+                const response = await fetch(`${API_SOLICITUDES_URL}/EntregarRepuesto/${currentSolicitud.id}`, {
                     method: 'PUT',
                     mode:"cors",
                     headers: {
                         'Content-Type': 'application/json;charset=utf-8"'
-                    },
-                    body: JSON.stringify(updatedSolicitud)
+                    }
                 });
 
                 if (response.ok) {
-                    mensajeActualizacionDiv.className = 'alert alert-success';
-                    mensajeActualizacionDiv.innerHTML = `Solicitud ${updatedSolicitud.id} actualizada a estado '${updatedSolicitud.estado}' exitosamente.`;
-                    // Recargar la solicitud para reflejar los cambios
-                    document.getElementById('btnBuscarSolicitud').click();
-                } else {
-                    const errorData = await response.json();
-                    mensajeActualizacionDiv.className = 'alert alert-danger';
-                    let errorMessage = 'Error al actualizar solicitud: ';
-                    if (response.status === 400 && errorData.errors) {
-                        for (const key in errorData.errors) {
-                            errorMessage += `${key}: ${errorData.errors[key].join(', ')} `;
-                        }
+                    if (response.status === 204) { // Si es 204 No Content
+                        mensajeActualizacionDiv.className = 'alert alert-success';
+                        mensajeActualizacionDiv.innerHTML = `Solicitud ${currentSolicitud.id} entregada exitosamente.`;
+                        window.location.reload();
+                        mensajeActualizacionDiv.className = 'alert alert-success';
+                        mensajeActualizacionDiv.innerHTML = `Solicitud ${currentSolicitud.id} actualizada a estado '${currentSolicitud.estado}' exitosamente.`;
+                    } else if (response.status === 200) { 
+                        const result = await response.json();
+                        mensajeActualizacionDiv.className = 'alert alert-success';
+                        mensajeActualizacionDiv.innerHTML = `Solicitud ${result.id} actualizada: ${result.estado}.`;
                     } else {
-                        errorMessage += errorData.title || errorData.detail || JSON.stringify(errorData);
+                        mensajeActualizacionDiv.className = 'alert alert-info';
+                        mensajeActualizacionDiv.innerHTML = `Operación exitosa con código: ${response.status}.`;
                     }
-                    mensajeActualizacionDiv.innerHTML = errorMessage;
-                    console.error('Error del API:', errorData);
+                } else {
+                    let errorData;
+                    try {
+                        errorData = await response.json(); // Intenta parsear como JSON
+                    } catch (e) {
+                        errorData = { message: `Error desconocido o respuesta no JSON. Código: ${response.status}` };
+                    }
+                    mensajeActualizacionDiv.className = 'alert alert-danger';
+                    mensajeActualizacionDiv.innerHTML = `Error al actualizar solicitud: ${errorData.message || errorData.title || JSON.stringify(errorData)}.`;
                 }
+                
             } catch (error) {
                 mensajeActualizacionDiv.className = 'alert alert-danger';
                 mensajeActualizacionDiv.innerHTML = `Ocurrió un error de red: ${error.message}.`;
@@ -241,6 +227,13 @@
                 mensajeActualizacionDiv.innerHTML = 'No se puede cancelar una solicitud si no está cargada o ya está entregada/cancelada.';
                 return;
             }
+            // Se obtiene los datos del usuario logueado
+            function getLoggedInUserData() {
+                const userDataString = localStorage.getItem('userData');
+                return userDataString ? JSON.parse(userDataString) : null;
+            }
+            const loggedInUserData = getLoggedInUserData();
+            const idUsuario = parseInt(loggedInUserData.id);
 
             const confirmCancel = confirm(`¿Está seguro que desea CANCELAR la solicitud ID ${currentSolicitud.id}?`);
             if (!confirmCancel) return;
@@ -248,31 +241,19 @@
             mensajeActualizacionDiv.innerHTML = '';
             mensajeActualizacionDiv.className = '';
 
-            const updatedSolicitud = {
-                id: currentSolicitud.id,
-                idRepuesto: currentSolicitud.idRepuesto,
-                idSolicitante: currentSolicitud.idSolicitante,
-                cantidadSolicitada: currentSolicitud.cantidadSolicitada,
-                fechaSolicitud: currentSolicitud.fechaSolicitud,
-                estado: "Cancelado", // Cambiar a cancelado
-                idEstado: 4,
-                idUsuarioEntrega: currentSolicitud.idUsuarioEntrega,
-                fechaEntrega: currentSolicitud.fechaEntrega,
-                observaciones: currentSolicitud.observaciones || null
-            };
+            const idsolicitud = parseInt(currentSolicitud.id);
 
             try {
-                const response = await fetch(`${API_SOLICITUDES_URL}/${updatedSolicitud.id}`, {
+                const response = await fetch(`${API_SOLICITUDES_URL}/RechazarSolicitud/${idsolicitud}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(updatedSolicitud)
+                    }
                 });
 
                 if (response.ok) {
                     mensajeActualizacionDiv.className = 'alert alert-success';
-                    mensajeActualizacionDiv.innerHTML = `Solicitud ${updatedSolicitud.id} CANCELADA exitosamente.`;
+                    mensajeActualizacionDiv.innerHTML = `Solicitud ${idsolicitud} CANCELADA exitosamente.`;
                     document.getElementById('btnBuscarSolicitud').click(); // Recargar para mostrar el nuevo estado
                 } else {
                     const errorData = await response.json();
@@ -298,7 +279,7 @@
 
         // Función para deshabilitar/habilitar campos del formulario
         function disableFormFields(disable) {
-            $("#entregadoPorId").disabled = disable;
+            $("#idUsuarioEntrega").disabled = disable;
             document.getElementById('fechaEntrega').disabled = disable;
             document.getElementById('observaciones').disabled = disable;
             document.getElementById('estado').disabled = disable;

@@ -41,6 +41,7 @@
             return userDataString ? JSON.parse(userDataString) : null;
         }
         const loggedInUserData = getLoggedInUserData();
+        const idUsuario = parseInt(loggedInUserData.id);
 
         function formatDateTime(dateString) {
             if (!dateString) {
@@ -65,7 +66,6 @@
                     mensajeListaSolicitudes.innerHTML = 'No se encontró información del usuario logueado.';
                     return;
                 }
-                const idUsuario = parseInt(loggedInUserData.id);
 
                 const response = await fetch(`${API_SOLICITUDES_URL}/ObtenerSolicitudesPorIdSolicitante/${idUsuario}`);
                 if (response.ok) {
@@ -77,7 +77,7 @@
                         return;
                     }
                     solicitudes.forEach(solicitud => {
-                        const usuarioEntregaNombre = solicitud.usuarioEntrega ? `${solicitud.usuarioEntrega.nombre}` : '';
+                        const usuarioEntregaNombre = solicitud.usuarioEntrega ? `${solicitud.usuarioEntrega.nombre} ${solicitud.usuarioEntrega.apellido}` : '';
                         const row = `
                             <tr>
                                 <td>${solicitud.id}</td>
@@ -99,7 +99,7 @@
                 } else {
                     const errorData = await response.json();
                     mensajeListaSolicitudes.className = 'alert alert-danger';
-                    mensajeListaSolicitudes.innerHTML = `Error al cargar solicitudes: ${errorData.message || JSON.stringify(errorData)}`;
+                    mensajeListaSolicitudes.innerHTML = `Error al cargar solicitudes: ${errorData.message}`;
                 }
             } catch (error) {
                 mensajeListaSolicitudes.className = 'alert alert-danger';

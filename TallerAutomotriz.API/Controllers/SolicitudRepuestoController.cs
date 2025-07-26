@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using TallerAutomotriz.Core.Entities;
 using TallerAutomotriz.DataAccess.Interfaces;
@@ -113,40 +114,51 @@ namespace TallerAutomotriz.API.Controllers
                 return NotFound("Solicitud no encontrada.");
             }
 
-            if (solicitud.Estado == "Entregada")
+            if (solicitud.Estado == "Entregado")
             {
-                return BadRequest("Esta solicitud ya ha sido entregada.");
+                return BadRequest("La solicitud ya ha sido entregada.");
             }
+
+            var usuario = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (usuario == null)
+            {
+                return Unauthorized("No se pudo identificar al usuario que realiza la entrega.");
+            }
+            var usuarioEntregaId = int.Parse(usuario);
+
+            solicitud.Estado = "Entregado";
+            solicitud.FechaEntrega = DateTime.Now;
+            solicitud.IdUsuarioEntrega = usuarioEntregaId;
 
             var repuesto = await _repuestoRepository.ObtenerRepuestoPorIdAsync(solicitud.IdRepuesto);
             if (repuesto == null)
             {
                 return NotFound("Repuesto asociado a la solicitud no encontrado.");
             }
-
             if (repuesto.CantidadDisponible < solicitud.CantidadSolicitada)
             {
-                return BadRequest($"No hay suficientes unidades de {repuesto.Nombre} para completar la entrega. Disponibles: {repuesto.CantidadDisponible}");
+                return BadRequest($"No hay suficiente cantidad disponible del repuesto '{repuesto.Nombre}' para esta solicitud. Disponibles: {repuesto.CantidadDisponible}.");
             }
-
-            // Actualizar inventario
             repuesto.CantidadDisponible -= solicitud.CantidadSolicitada;
-            await _repuestoRepository.ModificarRepuestoAsync(repuesto);
 
-            // Actualizar estado de la solicitud
-            solicitud.IdEstado = 3; 
-            solicitud.Estado = "Entregada";
-            solicitud.FechaEntrega = DateTime.Now;
-
-            await _solicitudRepository.ModificarSolicitudAsync(solicitud);
-
-            // Guardar todos los cambios transaccionalmente
-            if (await _solicitudRepository.GuardarCambiosAsync() && await _repuestoRepository.GuardarCambiosAsync())
+            try
             {
-                return NoContent(); // 204 No Content para actualización exitosa
-            }
+                // Llama directamente a los métodos que ya guardan en la DB
+                await _solicitudRepository.ModificarSolicitudAsync(solicitud);
+                await _repuestoRepository.ModificarRepuestoAsync(repuesto);
 
-            return StatusCode(500, "Error al procesar la entrega del repuesto.");
+                return NoContent(); // HTTP 204 No Content para éxito sin cuerpo de respuesta
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return Conflict("Error de concurrencia al actualizar la solicitud o el repuesto.");
+            }
+            catch (Exception ex)
+            {
+                // Log the exception for debugging
+                // _logger.LogError(ex, "Error al entregar repuesto para solicitud {SolicitudId}", id);
+                return StatusCode(500, $"Error interno del servidor al entregar repuesto: {ex.Message}");
+            }
         }
 
         [HttpPut("RechazarSolicitud/{id}/Rechazar")]
