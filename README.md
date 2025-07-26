@@ -1,0 +1,3 @@
+Documento: https://unedcr-my.sharepoint.com/:f:/g/personal/dayanaisabelag_uned_cr/EsdxbIZV2Q1CpmUMMm2UsqoB3thS0Noeu6gSyCkEW2FbpA?e=kE75jX
+Video: https://unedcr-my.sharepoint.com/:v:/g/personal/dayanaisabelag_uned_cr/EaLXWHGe2URJg3-qqxerM0cBmWEXmHTW9RU0rC51G8H1VA?e=f7zoVk&nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0%3D
+ScriptBD: https://unedcr-my.sharepoint.com/:t:/g/personal/dayanaisabelag_uned_cr/EetpIVsCT_5HvhQBDQO-ueIBPa_gGDBgXd4IRA2yd34dDQ?e=aZOxQU
