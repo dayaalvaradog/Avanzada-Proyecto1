@@ -1,0 +1,15 @@
+﻿body {
+    background-image: url("../img/taller-fondo.jpg");    /*Recuperado de: https: //www.autoavance.co/blog-tecnico-automotriz/taller-mecanico-productividad/*/ 
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.content {
+    text-align: center;
+    color: white;
+    padding: 20px;
+}

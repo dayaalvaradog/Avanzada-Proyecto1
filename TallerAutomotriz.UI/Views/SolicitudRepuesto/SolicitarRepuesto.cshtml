@@ -73,7 +73,7 @@
                 observaciones: formData.get('observaciones') || null 
             };
 
-            const API_BASE_URL = "https://localhost:7002";
+            const API_BASE_URL = "https://localhost:44384";
             const apiUrl = `${API_BASE_URL}/api/SolicitudRepuesto/InsertarSolicitudRepuesto`;
 
             try {
@@ -103,7 +103,6 @@
                         errorMessage += errorData.title || errorData.detail || JSON.stringify(errorData);
                     }
                     mensajeDiv.innerHTML = errorMessage;
-                    console.error('Error del API:', errorData);
                 }
             } catch (error) {
                 console.error('Error de red al enviar la solicitud:', error);

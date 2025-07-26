@@ -74,7 +74,7 @@
 
 @section Scripts {
     <script>
-        const API_BASE_URL = "https://localhost:7002";
+        const API_BASE_URL = "https://localhost:44384";
         const API_SOLICITUDES_URL = `${API_BASE_URL}/api/SolicitudRepuesto`;
         const API_REPUESTOS_URL = `${API_BASE_URL}/api/Repuesto/ObtenerRepuestoPorId`;
         const API_USUARIOS_URL = `${API_BASE_URL}/api/Usuario/ObtenerUsuarioPorId`;
@@ -189,9 +189,6 @@
 
                 if (response.ok) {
                     if (response.status === 204) { // Si es 204 No Content
-                        mensajeActualizacionDiv.className = 'alert alert-success';
-                        mensajeActualizacionDiv.innerHTML = `Solicitud ${currentSolicitud.id} entregada exitosamente.`;
-                        window.location.reload();
                         mensajeActualizacionDiv.className = 'alert alert-success';
                         mensajeActualizacionDiv.innerHTML = `Solicitud ${currentSolicitud.id} actualizada a estado '${currentSolicitud.estado}' exitosamente.`;
                     } else if (response.status === 200) { 
